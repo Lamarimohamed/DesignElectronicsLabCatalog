@@ -135,7 +135,7 @@ export default function ProductDetail({ product, products, onBack, onSelect }: P
             {/* Availability + download */}
             <div className="flex items-center gap-4">
               <AvailabilityBadge availability={product.availability} />
-              <DownloadButton />
+              <DownloadButton pdfUrl={product.pdfUrl} />
             </div>
           </div>
 
@@ -339,12 +339,26 @@ function AvailabilityBadge({ availability }: { availability: Product['availabili
   )
 }
 
-function DownloadButton() {
+function DownloadButton({ pdfUrl }: { pdfUrl?: string }) {
+  const disabled = !pdfUrl
+
   return (
-    <button
+    <a
+      href={pdfUrl || undefined}
+      target="_blank"
+      rel="noreferrer"
+      aria-disabled={disabled}
+      onClick={e => { if (disabled) e.preventDefault() }}
       className="flex items-center gap-2 px-4 py-1.5 border transition-colors group"
-      style={{ borderColor: 'var(--color-border)', background: 'transparent' }}
+      style={{
+        borderColor: 'var(--color-border)',
+        background: 'transparent',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.45 : 1,
+        textDecoration: 'none',
+      }}
       onMouseOver={e => {
+        if (disabled) return
         e.currentTarget.style.background = 'var(--color-foreground)'
         e.currentTarget.style.borderColor = 'var(--color-foreground)'
         e.currentTarget.querySelectorAll('span').forEach(el => { (el as HTMLElement).style.color = 'var(--color-primary-foreground)' })
@@ -354,16 +368,16 @@ function DownloadButton() {
         e.currentTarget.style.borderColor = 'var(--color-border)'
         e.currentTarget.querySelectorAll('span').forEach(el => { (el as HTMLElement).style.color = '' })
       }}
-      title="Télécharger la fiche technique (PDF)"
+      title={disabled ? 'Aucune fiche PDF disponible' : 'Télécharger la fiche technique (PDF)'}
     >
       <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
         <path d="M6 1v8M6 9l-3-3M6 9l3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"/>
         <line x1="1" y1="12" x2="11" y2="12" stroke="currentColor" strokeWidth="1.5"/>
       </svg>
       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: 'var(--color-foreground)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        Datasheet PDF
+        {disabled ? 'Pas de PDF' : 'Datasheet PDF'}
       </span>
-    </button>
+    </a>
   )
 }
 

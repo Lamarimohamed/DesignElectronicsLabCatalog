@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import type { Product, Availability } from '../data/products'
 import { CATEGORIES } from '../data/products'
 import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
-import { seedDemoProducts } from '../lib/productsApi'
+import { seedDemoProducts, deleteProduct } from '../lib/productsApi'
 import { uploadProductImage, getPublicUrl } from '../lib/storage'
 
 interface AdminPanelProps {
@@ -24,6 +24,7 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
   const [saving, setSaving] = useState(false)
   const [seeding, setSeeding] = useState(false)
   const [checkingSession, setCheckingSession] = useState(isSupabaseConfigured)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -92,6 +93,20 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       setActionError(err instanceof Error ? err.message : 'Enregistrement impossible.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async (product: Product) => {
+    if (!confirm(`Supprimer définitivement "${product.name}" (${product.ref}) ?`)) return
+    setDeletingId(product.id)
+    setActionError('')
+    try {
+      await deleteProduct(product.id)
+      onProductsChange(products.filter(p => p.id !== product.id))
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Suppression impossible.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -182,6 +197,8 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
             onSeed={handleSeed}
             seeding={seeding}
             onRefresh={onReload}
+            onDelete={handleDelete}
+            deletingId={deletingId}
           />
         )}
         {adminView === 'edit' && (
@@ -272,6 +289,8 @@ function ProductList({
   onSeed,
   seeding,
   onRefresh,
+  onDelete,
+  deletingId,
 }: {
   products: Product[]
   onEdit: (p: Product) => void
@@ -279,6 +298,8 @@ function ProductList({
   onSeed: () => Promise<void>
   seeding: boolean
   onRefresh: () => Promise<void>
+  onDelete: (p: Product) => Promise<void>
+  deletingId: string | null
 }) {
   return (
     <div>
@@ -344,12 +365,29 @@ function ProductList({
                     {p.availability === 'stock' ? 'En stock' : p.availability === 'commande' ? 'Commande' : 'Discontinué'}
                   </span>
                 </td>
-                <td style={{ padding: '10px 12px' }}>
+                <td style={{ padding: '10px 12px', display: 'flex', gap: 8 }}>
                   <button
                     onClick={() => onEdit(p)}
                     style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: '#555', background: 'none', border: '1px solid #DDD', padding: '4px 10px', cursor: 'pointer', letterSpacing: '0.04em' }}
                   >
                     Modifier
+                  </button>
+                  <button
+                    onClick={() => onDelete(p)}
+                    disabled={deletingId === p.id}
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.6875rem',
+                      color: 'var(--color-accent)',
+                      background: 'none',
+                      border: '1px solid rgba(200,55,10,0.3)',
+                      padding: '4px 10px',
+                      cursor: deletingId === p.id ? 'wait' : 'pointer',
+                      letterSpacing: '0.04em',
+                      opacity: deletingId === p.id ? 0.6 : 1,
+                    }}
+                  >
+                    {deletingId === p.id ? '…' : 'Supprimer'}
                   </button>
                 </td>
               </tr>
@@ -518,7 +556,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <textarea id="description" value={form.description} onChange={set('description')} rows={5} placeholder="Description complète pour la fiche produit..." style={adminInputStyle()} />
             <label style={{ display: 'block', padding: '10px 10px', border: '2px dashed #D8D8D8', background: '#FAFAFA', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#666' }}>
-              {uploadingPdf ? 'Chargement PDF…' : '📄 Charger un PDF (copier/coller contenu ci-dessus)'}
+              {uploadingPdf ? 'Chargement PDF…' : '📄 Charger un PDF (fiche technique / datasheet)'}
               <input
                 type="file"
                 accept="application/pdf"
@@ -532,13 +570,13 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
                 PDF: <a href={form.pdfUrl} target="_blank" rel="noreferrer" style={{ color: '#1A73E8' }}>Ouvrir le PDF</a>
                 <button type="button" onClick={() => setForm(f => ({ ...f, pdfUrl: '' }))} style={{ marginLeft: 8, background: 'none', border: '1px solid #DDD', padding: '4px 8px', cursor: 'pointer' }}>Supprimer</button>
               </div>
-            )
+            )}
           </div>
         </Field>
 
         {/* Section: Media */}
         <SectionLabel>Média et classification</SectionLabel>
-        
+
         <Field label="Image du produit">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {form.image && (
