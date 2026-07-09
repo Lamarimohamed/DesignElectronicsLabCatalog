@@ -15,20 +15,12 @@ export default function Header({ view, onNavigate }: HeaderProps) {
             onClick={() => onNavigate('catalog')}
             className="flex items-center gap-3 py-4 group focus-visible:outline-none"
           >
-            {/* Logo image, same as favicon */}
-            <div className="relative flex-shrink-0" style={{ width: 28, height: 28 }}>
-              <img src="/favicon.svg" alt="ElectronicCatalog Logo" style={{ width: 28, height: 28 }} />
-            </div>
+            {/* Logo image */}
+            <img src="/logo.png" alt="Bright LED Logo" style={{ height: 32, width: 'auto' }} />
 
-            <div className="flex flex-col items-start">
+            <div className="flex flex-col items-start border-l border-white/20 pl-3">
               <span
-                className="leading-none tracking-widest uppercase"
-                style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#FFFFFF', letterSpacing: '0.12em' }}
-              >
-                ElectronicCatalog
-              </span>
-              <span
-                className="leading-none mt-0.5"
+                className="leading-none"
                 style={{ fontFamily: 'var(--font-mono)', fontWeight: 300, fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em' }}
               >
                 CATALOGUE TECHNIQUE

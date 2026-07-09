@@ -1,8 +1,8 @@
 {
-  "title": "ElectronicCatalog",
+  "title": "Bright LED Catalog",
   "description": "Showcase technical products for engineers and technicians with detailed spec sheets, searchable catalog views, and a streamlined admin interface.",
   "icons": {
-    "icon": "/favicon.svg"
+    "icon": "/logo.png"
   },
   "robots": {
     "index": false

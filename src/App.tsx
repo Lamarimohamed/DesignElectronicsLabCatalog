@@ -4,6 +4,7 @@ import Header from './components/Header'
 import CatalogGrid from './components/CatalogGrid'
 import ProductDetail from './components/ProductDetail'
 import AdminPanel from './components/AdminPanel'
+import Footer from './components/Footer'
 import { fetchProducts, upsertProduct } from './lib/productsApi'
 import { isSupabaseConfigured } from './lib/supabase'
 
@@ -117,7 +118,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-background)', fontFamily: 'var(--font-sans)' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-background)', fontFamily: 'var(--font-sans)' }}>
       <Header
         view={view}
         onNavigate={(v) => {
@@ -125,7 +126,7 @@ export default function App() {
           if (v === 'catalog') setSelectedProduct(null)
         }}
       />
-      <main>
+      <main className="flex-grow">
         {view === 'catalog' && (
           <CatalogGrid products={products} onSelect={handleSelectProduct} />
         )}
@@ -133,6 +134,12 @@ export default function App() {
           <ProductDetail product={selectedProduct} onBack={handleBack} onSelect={handleSelectProduct} products={products} />
         )}
       </main>
+      <Footer
+        onNavigate={(v) => {
+          setView(v)
+          if (v === 'catalog') setSelectedProduct(null)
+        }}
+      />
     </div>
   )
 }

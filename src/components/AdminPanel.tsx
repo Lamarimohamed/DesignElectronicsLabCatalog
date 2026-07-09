@@ -157,7 +157,7 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
             )}
             {adminView === 'login' && (
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#333', letterSpacing: '0.04em' }}>
-                Administration — ElectronicCatalog
+                Administration — Bright LED Catalog
               </span>
             )}
           </div>
