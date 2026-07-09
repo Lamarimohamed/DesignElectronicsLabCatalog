@@ -3,6 +3,7 @@ import type { Product, Availability } from '../data/products'
 import { CATEGORIES } from '../data/products'
 import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
 import { seedDemoProducts } from '../lib/productsApi'
+import { uploadProductImage, getPublicUrl } from '../lib/storage'
 
 interface AdminPanelProps {
   products: Product[]
@@ -378,6 +379,8 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [uploadingPdf, setUploadingPdf] = useState(false)
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -385,6 +388,47 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
     if (!form.name.trim()) e.name = 'Le nom est obligatoire.'
     if (!form.shortDesc.trim()) e.shortDesc = 'La description courte est obligatoire.'
     return e
+  }
+
+  const handleImageUpload = async (file: File) => {
+    if (!isSupabaseConfigured) {
+      alert('Supabase non configuré. Utilisez une URL.')
+      return
+    }
+    try {
+      setUploadingImage(true)
+      const timestamp = Date.now()
+      const sanitizedName = file.name.replace(/[^a-z0-9.-]/gi, '-').toLowerCase()
+      const path = `products/${form.ref}/${timestamp}-${sanitizedName}`
+      await uploadProductImage(path, file)
+      const publicUrl = getPublicUrl(path)
+      if (publicUrl) {
+        setForm(f => ({ ...f, image: publicUrl }))
+      }
+    } catch (err) {
+      alert(`Erreur lors du chargement : ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handlePdfUpload = async (file: File) => {
+    if (!isSupabaseConfigured) {
+      alert('Supabase non configuré. Collez le texte directement.')
+      return
+    }
+    try {
+      setUploadingPdf(true)
+      const timestamp = Date.now()
+      const sanitizedName = file.name.replace(/[^a-z0-9.-]/gi, '-').toLowerCase()
+      const path = `product-pdfs/${form.ref}/${timestamp}-${sanitizedName}`
+      await uploadProductImage(path, file)
+      alert(`PDF chargé. Vous pouvez copier/coller le contenu dans la description technique.`)
+    } catch (err) {
+      alert(`Erreur lors du chargement PDF : ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setUploadingPdf(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -463,13 +507,56 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
         </Field>
 
         <Field label="Description technique" id="description">
-          <textarea id="description" value={form.description} onChange={set('description')} rows={5} placeholder="Description complète pour la fiche produit..." style={adminInputStyle()} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <textarea id="description" value={form.description} onChange={set('description')} rows={5} placeholder="Description complète pour la fiche produit..." style={adminInputStyle()} />
+            <label style={{ display: 'block', padding: '10px 10px', border: '2px dashed #D8D8D8', background: '#FAFAFA', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#666' }}>
+              {uploadingPdf ? 'Chargement PDF…' : '📄 Charger un PDF (copier/coller contenu ci-dessus)'}
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={e => e.target.files?.[0] && handlePdfUpload(e.target.files[0])}
+                disabled={uploadingPdf}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
         </Field>
 
         {/* Section: Media */}
         <SectionLabel>Média et classification</SectionLabel>
-        <Field label="URL image" id="image">
-          <input id="image" type="url" value={form.image} onChange={set('image')} placeholder="https://images.unsplash.com/photo-..." style={adminInputStyle()} />
+        
+        <Field label="Image du produit">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {form.image && (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 300, marginBottom: 8 }}>
+                <img src={form.image} alt="Preview" style={{ width: '100%', height: 'auto', maxHeight: 200, objectFit: 'contain', border: '1px solid #E0E0E0' }} />
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, image: '' }))}
+                  style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.7)', color: '#FFF', border: 'none', width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', fontSize: '0.75rem' }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ display: 'block', padding: '12px 10px', border: '2px dashed #D8D8D8', background: '#FAFAFA', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#666' }}>
+                  {uploadingImage ? 'Chargement…' : '📁 Depuis appareil'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                    disabled={uploadingImage}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+              <Field label="Ou URL image" id="image">
+                <input id="image" type="url" value={form.image} onChange={set('image')} placeholder="https://images.unsplash.com/…" style={adminInputStyle()} />
+              </Field>
+            </div>
+          </div>
         </Field>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
