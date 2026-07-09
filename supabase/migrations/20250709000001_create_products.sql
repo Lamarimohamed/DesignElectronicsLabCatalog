@@ -8,6 +8,7 @@ create table if not exists public.products (
   description text not null default '',
   short_desc text not null,
   image text not null default '',
+  pdf_url text not null default '',
   availability text not null default 'stock'
     check (availability in ('stock', 'commande', 'discontinue')),
   specs jsonb not null default '[]'::jsonb,

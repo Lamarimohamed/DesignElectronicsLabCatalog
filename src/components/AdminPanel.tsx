@@ -370,6 +370,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
     description: product?.description ?? '',
     shortDesc: product?.shortDesc ?? '',
     image: product?.image ?? '',
+    pdfUrl: product?.pdfUrl ?? '',
     availability: (product?.availability ?? 'stock') as Availability,
     norm: product?.norm ?? '',
     tags: product?.tags.join(', ') ?? '',
@@ -423,7 +424,13 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
       const sanitizedName = file.name.replace(/[^a-z0-9.-]/gi, '-').toLowerCase()
       const path = `product-pdfs/${form.ref}/${timestamp}-${sanitizedName}`
       await uploadProductImage(path, file)
-      alert(`PDF chargé. Vous pouvez copier/coller le contenu dans la description technique.`)
+      const publicUrl = getPublicUrl(path)
+      if (publicUrl) {
+        setForm(f => ({ ...f, pdfUrl: publicUrl }))
+        alert(`PDF chargé. URL publique enregistrée.`)
+      } else {
+        alert(`PDF chargé, mais impossible d'obtenir l'URL publique.`)
+      }
     } catch (err) {
       alert(`Erreur lors du chargement PDF : ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
@@ -452,6 +459,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
       description: form.description.trim(),
       shortDesc: form.shortDesc.trim(),
       image: form.image.trim() || (product?.image ?? ''),
+      pdfUrl: form.pdfUrl?.trim() || (product?.pdfUrl ?? undefined),
       availability: form.availability,
       norm: form.norm.trim() || undefined,
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
@@ -519,6 +527,12 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
                 style={{ display: 'none' }}
               />
             </label>
+            {form.pdfUrl && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#333', marginTop: 6 }}>
+                PDF: <a href={form.pdfUrl} target="_blank" rel="noreferrer" style={{ color: '#1A73E8' }}>Ouvrir le PDF</a>
+                <button type="button" onClick={() => setForm(f => ({ ...f, pdfUrl: '' }))} style={{ marginLeft: 8, background: 'none', border: '1px solid #DDD', padding: '4px 8px', cursor: 'pointer' }}>Supprimer</button>
+              </div>
+            )
           </div>
         </Field>
 

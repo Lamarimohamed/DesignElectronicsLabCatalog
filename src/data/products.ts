@@ -16,6 +16,7 @@ export interface Product {
   description: string
   shortDesc: string
   image: string
+  pdfUrl?: string
   availability: Availability
   specs: ProductSpec[]
   tags: string[]

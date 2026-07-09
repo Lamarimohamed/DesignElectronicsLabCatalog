@@ -11,6 +11,7 @@ type ProductRow = {
   description: string
   short_desc: string
   image: string
+  pdf_url: string
   availability: Product['availability']
   specs: ProductSpec[]
   tags: string[]
@@ -27,6 +28,7 @@ function rowToProduct(row: ProductRow): Product {
     description: row.description,
     shortDesc: row.short_desc,
     image: row.image,
+    pdfUrl: row.pdf_url ?? undefined,
     availability: row.availability,
     specs: row.specs ?? [],
     tags: row.tags ?? [],
@@ -44,6 +46,7 @@ function productToRow(product: Product): ProductRow {
     description: product.description,
     short_desc: product.shortDesc,
     image: product.image,
+    pdf_url: product.pdfUrl ?? '',
     availability: product.availability,
     specs: product.specs,
     tags: product.tags,
