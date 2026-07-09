@@ -16,7 +16,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
             className="flex items-center gap-3 py-4 group focus-visible:outline-none"
           >
             {/* Logo image */}
-            <img src="/logo.png" alt="Bright LED Logo" style={{ height: 32, width: 'auto' }} />
+            <img src="/logo.png" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
 
             <div className="flex flex-col items-start border-l border-white/20 pl-3">
               <span
@@ -41,7 +41,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
       </div>
 
       {/* Bottom accent bar */}
-      <div style={{ height: 2, background: 'var(--color-accent)', width: '100%' }} />
+      <div style={{ height: 2, background: '#FEFF00', width: '100%' }} />
     </header>
   )
 }
@@ -65,7 +65,7 @@ function NavLink({ children, active, onClick }: { children: React.ReactNode; act
       {active && (
         <span
           className="absolute bottom-0 left-0 right-0"
-          style={{ height: 2, background: 'var(--color-accent)' }}
+          style={{ height: 2, background: '#FEFF00' }}
         />
       )}
       {children}

@@ -8,7 +8,7 @@ export default function Footer({ onNavigate }: FooterProps) {
   return (
     <footer className="grid-bg border-t mt-auto text-white/70" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'var(--color-primary)' }}>
       {/* Top accent bar */}
-      <div style={{ height: 2, background: 'var(--color-accent)', width: '100%' }} />
+      <div style={{ height: 2, background: '#FEFF00', width: '100%' }} />
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
@@ -18,7 +18,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               onClick={() => onNavigate('catalog')}
               className="flex items-center gap-3 self-start focus-visible:outline-none"
             >
-              <img src="/logo.png" alt="Bright LED Logo" style={{ height: 32, width: 'auto' }} />
+              <img src="/logo.png" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
               <div className="border-l border-white/20 pl-3">
                 <span className="block text-[0.6rem] font-mono tracking-wider text-white/40">
                   CATALOGUE TECHNIQUE
