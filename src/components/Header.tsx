@@ -15,16 +15,9 @@ export default function Header({ view, onNavigate }: HeaderProps) {
             onClick={() => onNavigate('catalog')}
             className="flex items-center gap-3 py-4 group focus-visible:outline-none"
           >
-            {/* Schematic crosshair icon */}
+            {/* Logo image, same as favicon */}
             <div className="relative flex-shrink-0" style={{ width: 28, height: 28 }}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="6" stroke="var(--color-accent)" strokeWidth="1.5" fill="none"/>
-                <line x1="14" y1="0" x2="14" y2="7" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                <line x1="14" y1="21" x2="14" y2="28" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                <line x1="0" y1="14" x2="7" y2="14" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                <line x1="21" y1="14" x2="28" y2="14" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
-                <circle cx="14" cy="14" r="1.5" fill="var(--color-accent)"/>
-              </svg>
+              <img src="/favicon.svg" alt="ElectronicCatalog Logo" style={{ width: 28, height: 28 }} />
             </div>
 
             <div className="flex flex-col items-start">
@@ -32,7 +25,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
                 className="leading-none tracking-widest uppercase"
                 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', color: '#FFFFFF', letterSpacing: '0.12em' }}
               >
-                ElectraLab
+                ElectronicCatalog
               </span>
               <span
                 className="leading-none mt-0.5"
