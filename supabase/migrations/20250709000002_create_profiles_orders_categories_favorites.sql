@@ -97,7 +97,6 @@ create policy "categories_select_public"
 
 create policy "categories_insert_admin"
   on public.categories for insert
-  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
   with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
 create policy "categories_update_admin"
