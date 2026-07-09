@@ -1,0 +1,10 @@
+{
+  "description": "Showcase technical products for engineers and technicians with detailed spec sheets, searchable catalog views, and a streamlined admin interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

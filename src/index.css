@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-background: #ECEEF0;
+  --color-foreground: #0F1923;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0F1923;
+  --color-primary: #0F1923;
+  --color-primary-foreground: #ECEEF0;
+  --color-secondary: #E2E5E9;
+  --color-secondary-foreground: #0F1923;
+  --color-muted: #D8DCE2;
+  --color-muted-foreground: #5E6B7A;
+  --color-accent: #C8370A;
+  --color-accent-foreground: #FFFFFF;
+  --color-border: #C0C7D0;
+  --color-ring: #C8370A;
+  --color-success: #1A7A3F;
+  --color-warning: #B85C00;
+  --radius: 0px;
+
+  --font-sans: 'Barlow', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+}
+
+/* Engineering graph-paper grid motif */
+.grid-bg {
+  background-color: var(--color-primary);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
+
+.grid-bg-light {
+  background-color: var(--color-background);
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
+
+/* Scrollbar suppression */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); }
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Spec table styling */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.spec-table th {
+  text-align: left;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--color-foreground);
+  background: var(--color-secondary);
+}
+
+.spec-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.spec-table tr:last-child td {
+  border-bottom: none;
+}
+
+.spec-table tr:nth-child(even) td {
+  background: rgba(0,0,0,0.018);
+}
+
+.spec-table .param-index {
+  color: var(--color-muted-foreground);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  width: 2.5rem;
+}
+
+.spec-table .param-name {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: var(--color-foreground);
+}
+
+.spec-table .param-value {
+  font-weight: 500;
+  color: var(--color-foreground);
+}
+
+.spec-table .param-unit {
+  color: var(--color-muted-foreground);
+  font-size: 0.75rem;
+  padding-left: 0.25rem;
+}
