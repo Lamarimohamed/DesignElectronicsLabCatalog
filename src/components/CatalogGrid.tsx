@@ -70,11 +70,11 @@ export default function CatalogGrid({ products, onSelect }: CatalogGridProps) {
         </p>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar filters */}
-        <aside className="flex-shrink-0" style={{ width: 200 }}>
+        <aside className="w-full md:w-[200px] flex-shrink-0 flex flex-col sm:flex-row md:flex-col gap-6 md:gap-0">
           {/* Search */}
-          <div className="mb-6">
+          <div className="mb-6 sm:mb-0 md:mb-6 sm:flex-1">
             <label
               htmlFor="search"
               className="block mb-1.5"
@@ -109,7 +109,7 @@ export default function CatalogGrid({ products, onSelect }: CatalogGridProps) {
           </div>
 
           {/* Category filter */}
-          <div className="mb-6">
+          <div className="mb-6 sm:mb-0 md:mb-6 sm:flex-1">
             <div
               className="mb-2 pb-1.5 border-b"
               style={{
@@ -141,7 +141,7 @@ export default function CatalogGrid({ products, onSelect }: CatalogGridProps) {
           </div>
 
           {/* Availability filter */}
-          <div className="mb-6">
+          <div className="mb-6 sm:mb-0 md:mb-6 sm:flex-1">
             <div
               className="mb-2 pb-1.5 border-b"
               style={{
@@ -445,15 +445,15 @@ function ProductRow({ product, onSelect, isLast }: { product: Product; onSelect:
       </div>
 
       {/* Info */}
-      <div className="flex items-center flex-1 px-4 py-3 gap-4 min-w-0">
-        <div className="flex-shrink-0" style={{ width: 120 }}>
+      <div className="flex flex-col sm:flex-row sm:items-center flex-1 px-4 py-3 gap-2 sm:gap-4 min-w-0">
+        <div className="flex-shrink-0 w-full sm:w-[120px]">
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 500 }}>{product.ref}</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.625rem', color: 'var(--color-muted-foreground)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>{product.subcategory}</div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-foreground)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</div>
-          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--color-muted-foreground)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.shortDesc}</div>
+        <div className="flex-1 min-w-0 w-full">
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-foreground)', overflow: 'hidden', textOverflow: 'ellipsis' }} className="whitespace-normal sm:whitespace-nowrap">{product.name}</div>
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--color-muted-foreground)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis' }} className="whitespace-normal sm:whitespace-nowrap">{product.shortDesc}</div>
         </div>
 
         <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -461,7 +461,7 @@ function ProductRow({ product, onSelect, isLast }: { product: Product; onSelect:
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', color: 'var(--color-muted-foreground)' }}>{AVAILABILITY_LABELS[product.availability]}</span>
         </div>
 
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: hovered ? 'var(--color-accent)' : 'var(--color-muted-foreground)', flexShrink: 0, transition: 'color 0.15s' }}>
+        <div className="hidden sm:block" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: hovered ? 'var(--color-accent)' : 'var(--color-muted-foreground)', flexShrink: 0, transition: 'color 0.15s' }}>
           Fiche →
         </div>
       </div>

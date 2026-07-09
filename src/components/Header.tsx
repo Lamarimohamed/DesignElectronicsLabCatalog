@@ -8,7 +8,7 @@ interface HeaderProps {
 export default function Header({ view, onNavigate }: HeaderProps) {
   return (
     <header className="grid-bg border-b" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
-      <div className="max-w-screen-xl mx-auto px-6 py-0">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-0">
         <div className="flex items-stretch justify-between" style={{ minHeight: '64px' }}>
           {/* Logo / wordmark */}
           <button
@@ -65,7 +65,7 @@ function NavLink({ children, active, onClick }: { children: React.ReactNode; act
   return (
     <button
       onClick={onClick}
-      className="relative px-5 flex items-center transition-colors duration-150"
+      className="relative px-3 sm:px-5 flex items-center transition-colors duration-150"
       style={{
         fontFamily: 'var(--font-sans)',
         fontWeight: 500,

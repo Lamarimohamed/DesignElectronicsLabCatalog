@@ -133,7 +133,7 @@ export default function ProductDetail({ product, products, onBack, onSelect }: P
             </div>
 
             {/* Availability + download */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               <AvailabilityBadge availability={product.availability} />
               <DownloadButton pdfUrl={product.pdfUrl} />
             </div>
@@ -141,8 +141,8 @@ export default function ProductDetail({ product, products, onBack, onSelect }: P
 
           {/* Right: image */}
           <div
-            className="md:flex-shrink-0 overflow-hidden"
-            style={{ width: '100%', maxWidth: 380, height: 260, background: '#0F1923' }}
+            className="w-full md:w-[380px] md:flex-shrink-0 overflow-hidden"
+            style={{ height: 260, background: '#0F1923' }}
           >
             <img
               src={product.image}
@@ -196,7 +196,7 @@ export default function ProductDetail({ product, products, onBack, onSelect }: P
           >
             Produits associés — {product.category}
           </div>
-          <div className="flex gap-px" style={{ background: 'var(--color-border)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px" style={{ background: 'var(--color-border)' }}>
             {related.map(p => (
               <RelatedCard key={p.id} product={p} onSelect={onSelect} />
             ))}

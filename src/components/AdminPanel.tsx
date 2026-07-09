@@ -303,7 +303,7 @@ function ProductList({
 }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.125rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#111' }}>
             Produits
@@ -312,7 +312,7 @@ function ProductList({
             {products.length} références
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="flex flex-wrap gap-2">
           {products.length === 0 && isSupabaseConfigured && (
             <button
               onClick={onSeed}
@@ -337,7 +337,7 @@ function ProductList({
         </div>
       </div>
 
-      <div style={{ border: '1px solid #E0E0E0', background: '#FFF' }}>
+      <div style={{ border: '1px solid #E0E0E0', background: '#FFF' }} className="overflow-x-auto">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)', fontSize: '0.875rem' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #111' }}>
@@ -518,7 +518,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Section: Identification */}
         <SectionLabel>Identification</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Référence *" id="ref" error={errors.ref}>
             <input id="ref" type="text" value={form.ref} onChange={set('ref')} placeholder="ILP-450-LED" style={adminInputStyle(errors.ref)} />
           </Field>
@@ -535,7 +535,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
           <input id="name" type="text" value={form.name} onChange={set('name')} placeholder="Luminaire LED Industriel Haute Baie" style={adminInputStyle(errors.name)} />
         </Field>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Catégorie" id="category">
             <select id="category" value={form.category} onChange={set('category')} style={adminInputStyle()}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -591,7 +591,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
                 </button>
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={{ display: 'block', padding: '12px 10px', border: '2px dashed #D8D8D8', background: '#FAFAFA', cursor: 'pointer', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#666' }}>
                   {uploadingImage ? 'Chargement…' : '📁 Depuis appareil'}
@@ -611,7 +611,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
           </div>
         </Field>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Norme(s)" id="norm">
             <input id="norm" type="text" value={form.norm} onChange={set('norm')} placeholder="EN 60598-1, IEC 62031" style={adminInputStyle()} />
           </Field>
