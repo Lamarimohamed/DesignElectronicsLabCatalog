@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export default function Header({ view, onNavigate }: HeaderProps) {
   return (
-    <header className="grid-bg border-b" style={{ borderColor: 'rgba(255,255,255,0.12)', background: '#1D3FA0' /* Blue background */ }}>
+    <header className="grid-bg border-b" style={{ borderColor: 'rgba(255,255,255,0.12)', background: '#003CA6' /* Blue background */ }}>
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-0">
         <div className="flex items-stretch justify-between" style={{ minHeight: '64px' }}>
           {/* Logo / wordmark */}
@@ -41,7 +41,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
       </div>
 
       {/* Bottom accent bar */}
-      <div style={{ height: 2, background: '#1D3FA0', width: '100%' }} />
+      <div style={{ height: 2, background: '#003CA6', width: '100%' }} />
     </header>
   )
 }
