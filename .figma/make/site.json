@@ -2,7 +2,7 @@
   "title": "Bright LED Catalog",
   "description": "Showcase technical products for engineers and technicians with detailed spec sheets, searchable catalog views, and a streamlined admin interface.",
   "icons": {
-    "icon": "/logo.png"
+    "icon": "/favicon.svg"
   },
   "robots": {
     "index": false

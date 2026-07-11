@@ -18,7 +18,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               onClick={() => onNavigate('catalog')}
               className="flex items-center gap-3 self-start focus-visible:outline-none"
             >
-              <img src="/logo.png" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
+              <img src="/favicon.svg" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
               <div className="border-l border-white/20 pl-3">
                 <span className="block text-[0.6rem] font-mono tracking-wider text-white/40">
                   CATALOGUE TECHNIQUE
