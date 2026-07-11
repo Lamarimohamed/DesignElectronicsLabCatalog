@@ -16,7 +16,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
             className="flex items-center gap-3 py-4 group focus-visible:outline-none"
           >
             {/* Logo image */}
-      <img src="/favicon.svg" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
+            <img src="/favicon.svg" alt="Bright LED Logo" style={{ height: 48, width: 'auto' }} />
 
             <div className="flex flex-col items-start border-l border-white/20 pl-3">
               <span
