@@ -6,9 +6,9 @@ interface FooterProps {
 
 export default function Footer({ onNavigate }: FooterProps) {
   return (
-    <footer className="grid-bg border-t mt-auto text-white/70" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'var(--color-primary)' }}>
+    <footer className="grid-bg border-t mt-auto text-white/70" style={{ borderColor: 'rgba(255,255,255,0.12)', background: '#1E3A8A' /* Blue background */ }}>
       {/* Top accent bar */}
-      <div style={{ height: 2, background: '#FEFF00', width: '100%' }} />
+      <div style={{ height: 2, background: '#3B82F6', width: '100%' }} />
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">

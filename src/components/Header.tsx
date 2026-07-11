@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export default function Header({ view, onNavigate }: HeaderProps) {
   return (
-    <header className="grid-bg border-b" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
+    <header className="grid-bg border-b" style={{ borderColor: 'rgba(255,255,255,0.12)', background: '#1E3A8A' /* Blue background */ }}>
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-0">
         <div className="flex items-stretch justify-between" style={{ minHeight: '64px' }}>
           {/* Logo / wordmark */}
@@ -21,7 +21,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
             <div className="flex flex-col items-start border-l border-white/20 pl-3">
               <span
                 className="leading-none"
-                style={{ fontFamily: 'var(--font-mono)', fontWeight: 300, fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em' }}
+                style={{ fontFamily: 'var(--font-mono)', fontWeight: 300, fontSize: '0.6rem', color: 'white', letterSpacing: '0.06em' }}
               >
                 CATALOGUE TECHNIQUE
               </span>
@@ -41,7 +41,7 @@ export default function Header({ view, onNavigate }: HeaderProps) {
       </div>
 
       {/* Bottom accent bar */}
-      <div style={{ height: 2, background: '#FEFF00', width: '100%' }} />
+      <div style={{ height: 2, background: '#3B82F6', width: '100%' }} />
     </header>
   )
 }
