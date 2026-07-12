@@ -75,15 +75,18 @@ create trigger orders_updated_at
 
 -- Row-level security and policies
 alter table public.profiles enable row level security;
+drop policy if exists "profiles_select_self_or_admin" on public.profiles;
 create policy "profiles_select_self_or_admin"
  on public.profiles for select
  using (auth.role() = 'anonymous' or auth.uid() = id or (exists (select 1 from public.profiles p2 where p2.id = auth.uid() and p2.is_admin)));
 
+drop policy if exists "profiles_update_self" on public.profiles;
 create policy "profiles_update_self"
  on public.profiles for update
  using (auth.uid() = id)
  with check (auth.uid() = id);
 
+drop policy if exists "profiles_insert_auth" on public.profiles;
 create policy "profiles_insert_auth"
  on public.profiles for insert
  to authenticated
@@ -91,34 +94,41 @@ create policy "profiles_insert_auth"
 
 -- Categories: public can read
 alter table public.categories enable row level security;
+drop policy if exists "categories_select_public" on public.categories;
 create policy "categories_select_public"
   on public.categories for select
   using (true);
 
+drop policy if exists "categories_insert_admin" on public.categories;
 create policy "categories_insert_admin"
   on public.categories for insert
   with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
+drop policy if exists "categories_update_admin" on public.categories;
 create policy "categories_update_admin"
   on public.categories for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
   with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
+drop policy if exists "categories_delete_admin" on public.categories;
 create policy "categories_delete_admin"
   on public.categories for delete
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
 -- Orders: user can insert and view their orders; admins can view and update
 alter table public.orders enable row level security;
+drop policy if exists "orders_insert_authenticated" on public.orders;
 create policy "orders_insert_authenticated"
   on public.orders for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "orders_select_owner_or_admin" on public.orders;
 create policy "orders_select_owner_or_admin"
   on public.orders for select
   using (auth.uid() = user_id or exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin));
 
+drop policy if exists "orders_update_admin_or_owner" on public.orders;
 create policy "orders_update_admin_or_owner"
   on public.orders for update
   using (auth.uid() = user_id or exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin))
@@ -126,15 +136,18 @@ create policy "orders_update_admin_or_owner"
 
 -- Favorites: users can insert/delete their favorites
 alter table public.favorites enable row level security;
+drop policy if exists "favorites_insert_owner" on public.favorites;
 create policy "favorites_insert_owner"
   on public.favorites for insert
   to authenticated
   with check (auth.uid() = user_id);
 
+drop policy if exists "favorites_select_owner" on public.favorites;
 create policy "favorites_select_owner"
   on public.favorites for select
   using (auth.uid() = user_id);
 
+drop policy if exists "favorites_delete_owner" on public.favorites;
 create policy "favorites_delete_owner"
   on public.favorites for delete
   using (auth.uid() = user_id);

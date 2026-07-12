@@ -5,6 +5,9 @@
 drop policy if exists "products_insert_authenticated" on public.products;
 drop policy if exists "products_update_authenticated" on public.products;
 drop policy if exists "products_delete_authenticated" on public.products;
+drop policy if exists "products_insert_admin" on public.products;
+drop policy if exists "products_update_admin" on public.products;
+drop policy if exists "products_delete_admin" on public.products;
 
 create policy "products_insert_admin"
   on public.products
@@ -37,11 +40,13 @@ create policy "profiles_select_self_or_admin"
 
 -- Storage: product-images bucket policies (public read, admin-only write).
 -- Run this after creating the bucket via Dashboard/CLI (bucket name: product-images, public: true).
+drop policy if exists "product_images_public_read" on storage.objects;
 create policy "product_images_public_read"
   on storage.objects
   for select
   using (bucket_id = 'product-images');
 
+drop policy if exists "product_images_admin_insert" on storage.objects;
 create policy "product_images_admin_insert"
   on storage.objects
   for insert
@@ -51,6 +56,7 @@ create policy "product_images_admin_insert"
     and exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
   );
 
+drop policy if exists "product_images_admin_update" on storage.objects;
 create policy "product_images_admin_update"
   on storage.objects
   for update
@@ -60,6 +66,7 @@ create policy "product_images_admin_update"
     and exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin)
   );
 
+drop policy if exists "product_images_admin_delete" on storage.objects;
 create policy "product_images_admin_delete"
   on storage.objects
   for delete

@@ -40,18 +40,21 @@ create trigger products_updated_at
 alter table public.products enable row level security;
 
 -- Anyone can browse the catalog (public read)
+drop policy if exists "products_select_public" on public.products;
 create policy "products_select_public"
   on public.products
   for select
   using (true);
 
 -- Only signed-in admins can create, update, or delete
+drop policy if exists "products_insert_authenticated" on public.products;
 create policy "products_insert_authenticated"
   on public.products
   for insert
   to authenticated
   with check (true);
 
+drop policy if exists "products_update_authenticated" on public.products;
 create policy "products_update_authenticated"
   on public.products
   for update
@@ -59,6 +62,7 @@ create policy "products_update_authenticated"
   using (true)
   with check (true);
 
+drop policy if exists "products_delete_authenticated" on public.products;
 create policy "products_delete_authenticated"
   on public.products
   for delete

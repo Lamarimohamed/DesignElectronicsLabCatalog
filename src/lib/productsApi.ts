@@ -74,9 +74,30 @@ export async function upsertProduct(product: Product): Promise<Product> {
   }
 
   const row = productToRow(product)
-  const { data, error } = await requireSupabase()
+  const supabase = requireSupabase()
+  const { data: existing, error: lookupError } = await supabase
     .from('products')
-    .upsert(row, { onConflict: 'id' })
+    .select('id')
+    .eq('id', product.id)
+    .maybeSingle()
+
+  if (lookupError) throw lookupError
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from('products')
+      .update(row)
+      .eq('id', product.id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return rowToProduct(data as ProductRow)
+  }
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert(row)
     .select()
     .single()
 

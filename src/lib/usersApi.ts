@@ -3,7 +3,7 @@ import { isSupabaseConfigured, requireSupabase } from './supabase'
 
 export async function fetchProfile(id: string) {
   if (!isSupabaseConfigured) return null
-  const { data, error } = await requireSupabase().from('profiles').select('*').eq('id', id).single()
+  const { data, error } = await requireSupabase().from('profiles').select('*').eq('id', id).maybeSingle()
   if (error) throw error
   return data as Profile
 }

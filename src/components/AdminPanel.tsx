@@ -3,7 +3,8 @@ import type { Product, Availability } from '../data/products'
 import { CATEGORIES } from '../data/products'
 import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
 import { seedDemoProducts, deleteProduct } from '../lib/productsApi'
-import { uploadProductImage, getPublicUrl } from '../lib/storage'
+import { uploadProductImage, getPublicUrl, deleteFile } from '../lib/storage'
+import { fetchProfile, upsertProfile } from '../lib/usersApi'
 
 interface AdminPanelProps {
   products: Product[]
@@ -15,6 +16,47 @@ interface AdminPanelProps {
 
 type AdminView = 'login' | 'list' | 'edit'
 
+type AdminDiagnostics = {
+  checkedAt: string
+  userId: string | null
+  email: string | null
+  profileExists: boolean
+  isAdmin: boolean
+  storageWriteOk: boolean
+  notes: string[]
+}
+
+function toAdminErrorMessage(err: unknown, actionLabel = 'Cette action') {
+  const message = err instanceof Error ? err.message : ''
+  const normalized = message.toLowerCase()
+
+  if (normalized.includes('row-level security') || normalized.includes('permission denied')) {
+    return `${actionLabel} a été refusée. Votre compte est connecté mais n'a pas les droits administrateur dans la table profiles (is_admin = true).`
+  }
+
+  if (normalized.includes('bucket') || normalized.includes('storage') || normalized.includes('object')) {
+    return `${actionLabel} a échoué. Vérifiez les policies Storage du bucket product-images (insert/update/delete autorisés pour les admins).`
+  }
+
+  return message || `${actionLabel} a échoué.`
+}
+
+async function ensureCurrentUserIsAdmin() {
+  const { data: { user } } = await requireSupabase().auth.getUser()
+  if (!user) return false
+
+  let profile = await fetchProfile(user.id)
+  if (!profile) {
+    profile = await upsertProfile({
+      id: user.id,
+      display_name: user.email ?? '',
+      is_admin: false,
+    })
+  }
+
+  return Boolean(profile?.is_admin)
+}
+
 
 export default function AdminPanel({ products, onSave, onExit, onProductsChange, onReload }: AdminPanelProps) {
   const [adminView, setAdminView] = useState<AdminView>('login')
@@ -25,6 +67,8 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
   const [seeding, setSeeding] = useState(false)
   const [checkingSession, setCheckingSession] = useState(isSupabaseConfigured)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [diagnostics, setDiagnostics] = useState<AdminDiagnostics | null>(null)
+  const [diagnosing, setDiagnosing] = useState(false)
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -38,7 +82,19 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       try {
         const { data: { session } } = await requireSupabase().auth.getSession()
         if (!cancelled && session) {
-          setAdminView('list')
+          const isAdmin = await ensureCurrentUserIsAdmin()
+          if (isAdmin) {
+            setAdminView('list')
+          } else {
+            await requireSupabase().auth.signOut()
+            setLoginError('Connexion réussie, mais ce compte n\'est pas admin. Activez is_admin=true dans public.profiles pour cet utilisateur.')
+            setAdminView('login')
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLoginError(toAdminErrorMessage(err, 'La vérification de session'))
+          setAdminView('login')
         }
       } finally {
         if (!cancelled) setCheckingSession(false)
@@ -61,6 +117,20 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       setLoginError('Identifiants incorrects.')
       return
     }
+
+    try {
+      const isAdmin = await ensureCurrentUserIsAdmin()
+      if (!isAdmin) {
+        await requireSupabase().auth.signOut()
+        setLoginError('Connexion réussie, mais ce compte n\'est pas admin. Activez is_admin=true dans public.profiles pour cet utilisateur.')
+        return
+      }
+    } catch (err) {
+      await requireSupabase().auth.signOut()
+      setLoginError(toAdminErrorMessage(err, 'La vérification des droits admin'))
+      return
+    }
+
     setAdminView('list')
   }
 
@@ -90,7 +160,7 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       await onSave(product)
       setAdminView('list')
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Enregistrement impossible.')
+      setActionError(toAdminErrorMessage(err, 'L\'enregistrement'))
     } finally {
       setSaving(false)
     }
@@ -104,7 +174,7 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       await deleteProduct(product.id)
       onProductsChange(products.filter(p => p.id !== product.id))
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Suppression impossible.')
+      setActionError(toAdminErrorMessage(err, 'La suppression'))
     } finally {
       setDeletingId(null)
     }
@@ -117,9 +187,77 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
       const seeded = await seedDemoProducts()
       onProductsChange(seeded)
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Import impossible.')
+      setActionError(toAdminErrorMessage(err, 'L\'import'))
     } finally {
       setSeeding(false)
+    }
+  }
+
+  const runAdminDiagnostics = async () => {
+    if (!isSupabaseConfigured) {
+      setDiagnostics({
+        checkedAt: new Date().toISOString(),
+        userId: null,
+        email: null,
+        profileExists: false,
+        isAdmin: false,
+        storageWriteOk: false,
+        notes: ['Supabase non configuré dans .env (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).'],
+      })
+      return
+    }
+
+    setDiagnosing(true)
+    const notes: string[] = []
+    let userId: string | null = null
+    let email: string | null = null
+    let profileExists = false
+    let isAdmin = false
+    let storageWriteOk = false
+
+    try {
+      const { data: { user } } = await requireSupabase().auth.getUser()
+      userId = user?.id ?? null
+      email = user?.email ?? null
+
+      if (!user) {
+        notes.push('Aucune session active.')
+      } else {
+        const profile = await fetchProfile(user.id)
+        if (!profile) {
+          notes.push('Aucune ligne profile trouvée pour cet utilisateur.')
+        } else {
+          profileExists = true
+          isAdmin = Boolean(profile.is_admin)
+          if (!isAdmin) {
+            notes.push('Le profil existe mais is_admin est false.')
+          }
+        }
+
+        const diagPath = `diagnostics/${user.id}/${Date.now()}-write-check.txt`
+        try {
+          const blob = new Blob(['storage-write-check'], { type: 'text/plain' })
+          const file = new File([blob], 'write-check.txt', { type: 'text/plain' })
+          await uploadProductImage(diagPath, file)
+          await deleteFile(diagPath)
+          storageWriteOk = true
+        } catch (err) {
+          notes.push(toAdminErrorMessage(err, 'Le test Storage'))
+        }
+      }
+    } catch (err) {
+      notes.push(toAdminErrorMessage(err, 'Le diagnostic admin'))
+    } finally {
+      setDiagnostics({
+        checkedAt: new Date().toISOString(),
+        userId,
+        email,
+        profileExists,
+        isAdmin,
+        storageWriteOk,
+        notes,
+      })
+      setDiagnosing(false)
     }
   }
 
@@ -187,19 +325,33 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
           </div>
         )}
         {adminView === 'login' && (
-          <LoginForm onLogin={handleLogin} error={loginError} />
+          <>
+            <AdminDiagnosticsPanel
+              diagnostics={diagnostics}
+              diagnosing={diagnosing}
+              onRun={runAdminDiagnostics}
+            />
+            <LoginForm onLogin={handleLogin} error={loginError} />
+          </>
         )}
         {adminView === 'list' && (
-          <ProductList
-            products={products}
-            onEdit={handleEdit}
-            onNew={handleNew}
-            onSeed={handleSeed}
-            seeding={seeding}
-            onRefresh={onReload}
-            onDelete={handleDelete}
-            deletingId={deletingId}
-          />
+          <>
+            <AdminDiagnosticsPanel
+              diagnostics={diagnostics}
+              diagnosing={diagnosing}
+              onRun={runAdminDiagnostics}
+            />
+            <ProductList
+              products={products}
+              onEdit={handleEdit}
+              onNew={handleNew}
+              onSeed={handleSeed}
+              seeding={seeding}
+              onRefresh={onReload}
+              onDelete={handleDelete}
+              deletingId={deletingId}
+            />
+          </>
         )}
         {adminView === 'edit' && (
           <ProductForm
@@ -210,6 +362,59 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
           />
         )}
       </div>
+    </div>
+  )
+}
+
+function AdminDiagnosticsPanel({
+  diagnostics,
+  diagnosing,
+  onRun,
+}: {
+  diagnostics: AdminDiagnostics | null
+  diagnosing: boolean
+  onRun: () => Promise<void>
+}) {
+  return (
+    <div style={{ marginBottom: 18, padding: '12px', border: '1px solid #E0E0E0', background: '#FFF' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6875rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#666' }}>
+            Diagnostic administrateur
+          </div>
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8125rem', color: '#444', marginTop: 2 }}>
+            Vérifie session, profile.is_admin et permissions Storage.
+          </div>
+        </div>
+        <button
+          onClick={() => onRun()}
+          disabled={diagnosing}
+          style={{ background: 'none', color: '#555', border: '1px solid #CCC', padding: '7px 12px', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: diagnosing ? 'wait' : 'pointer' }}
+        >
+          {diagnosing ? 'Diagnostic…' : 'Lancer le diagnostic'}
+        </button>
+      </div>
+
+      {diagnostics && (
+        <div style={{ marginTop: 10, borderTop: '1px solid #F0F0F0', paddingTop: 10 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#333', lineHeight: 1.7 }}>
+            <div>Utilisateur: {diagnostics.email ?? 'non connecté'}</div>
+            <div>User ID: {diagnostics.userId ?? 'n/a'}</div>
+            <div>Profile: {diagnostics.profileExists ? 'trouvé' : 'introuvable'}</div>
+            <div>is_admin: {diagnostics.isAdmin ? 'true' : 'false'}</div>
+            <div>Storage write: {diagnostics.storageWriteOk ? 'ok' : 'échec'}</div>
+            <div>Vérifié à: {new Date(diagnostics.checkedAt).toLocaleString()}</div>
+          </div>
+
+          {diagnostics.notes.length > 0 && (
+            <div style={{ marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--color-accent)', padding: '8px 10px', background: 'rgba(200,55,10,0.06)', border: '1px solid rgba(200,55,10,0.2)' }}>
+              {diagnostics.notes.map((n, idx) => (
+                <div key={idx}>- {n}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -445,7 +650,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
         setForm(f => ({ ...f, image: publicUrl }))
       }
     } catch (err) {
-      alert(`Erreur lors du chargement : ${err instanceof Error ? err.message : 'Unknown error'}`)
+      alert(toAdminErrorMessage(err, 'Le chargement de l\'image'))
     } finally {
       setUploadingImage(false)
     }
@@ -470,7 +675,7 @@ function ProductForm({ product, onSave, onCancel, saving }: { product: Product |
         alert(`PDF chargé, mais impossible d'obtenir l'URL publique.`)
       }
     } catch (err) {
-      alert(`Erreur lors du chargement PDF : ${err instanceof Error ? err.message : 'Unknown error'}`)
+      alert(toAdminErrorMessage(err, 'Le chargement du PDF'))
     } finally {
       setUploadingPdf(false)
     }
