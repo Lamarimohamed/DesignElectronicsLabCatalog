@@ -21,3 +21,11 @@ export async function listAdmins() {
   if (error) throw error
   return data
 }
+
+// New function to check admin status using our SQL function
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  if (!isSupabaseConfigured) return false
+  const { data, error } = await requireSupabase().rpc('is_current_user_admin')
+  if (error) throw error
+  return Boolean(data)
+}

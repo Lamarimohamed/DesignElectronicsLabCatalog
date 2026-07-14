@@ -4,7 +4,7 @@ import { CATEGORIES } from '../data/products'
 import { requireSupabase, isSupabaseConfigured } from '../lib/supabase'
 import { seedDemoProducts, deleteProduct } from '../lib/productsApi'
 import { uploadProductImage, getPublicUrl, deleteFile } from '../lib/storage'
-import { fetchProfile, upsertProfile } from '../lib/usersApi'
+import { fetchProfile, upsertProfile, isCurrentUserAdmin } from '../lib/usersApi'
 
 interface AdminPanelProps {
   products: Product[]
@@ -27,34 +27,47 @@ type AdminDiagnostics = {
 }
 
 function toAdminErrorMessage(err: unknown, actionLabel = 'Cette action') {
-  const message = err instanceof Error ? err.message : ''
+  console.error(`${actionLabel} error:`, err); // Log full error to browser console
+  const message = err instanceof Error ? err.message : String(err)
   const normalized = message.toLowerCase()
 
   if (normalized.includes('row-level security') || normalized.includes('permission denied')) {
-    return `${actionLabel} a été refusée. Votre compte est connecté mais n'a pas les droits administrateur dans la table profiles (is_admin = true).`
+    return `${actionLabel} a été refusée. Votre compte est connecté mais n'a pas les droits administrateur dans la table profiles (is_admin = true). Détails: ${message}`
   }
 
   if (normalized.includes('bucket') || normalized.includes('storage') || normalized.includes('object')) {
-    return `${actionLabel} a échoué. Vérifiez les policies Storage du bucket product-images (insert/update/delete autorisés pour les admins).`
+    return `${actionLabel} a échoué. Vérifiez les policies Storage du bucket product-images (insert/update/delete autorisés pour les admins). Détails: ${message}`
   }
 
-  return message || `${actionLabel} a échoué.`
+  return `${actionLabel} a échoué: ${message}`
 }
 
 async function ensureCurrentUserIsAdmin() {
+  console.log('Checking current user...');
   const { data: { user } } = await requireSupabase().auth.getUser()
-  if (!user) return false
+  console.log('User from auth.getUser():', user);
+  if (!user) {
+    console.log('No user found!');
+    return false
+  }
 
+  // First make sure the profile exists
   let profile = await fetchProfile(user.id)
+  console.log('Fetched profile:', profile);
   if (!profile) {
+    console.log('Profile not found, creating new one with is_admin=false...');
     profile = await upsertProfile({
       id: user.id,
       display_name: user.email ?? '',
       is_admin: false,
     })
+    console.log('Created profile:', profile);
   }
 
-  return Boolean(profile?.is_admin)
+  // Use our new non-recursive function to check admin status
+  const isAdmin = await isCurrentUserAdmin()
+  console.log('isCurrentUserAdmin() result:', isAdmin);
+  return isAdmin
 }
 
 
@@ -112,20 +125,24 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
     }
 
     setLoginError('')
-    const { error } = await requireSupabase().auth.signInWithPassword({ email, password })
+    console.log('Attempting login for:', email);
+    const { data: authData, error } = await requireSupabase().auth.signInWithPassword({ email, password })
+    console.log('signInWithPassword result:', { authData, error });
     if (error) {
-      setLoginError('Identifiants incorrects.')
+      setLoginError(`Identifiants incorrects: ${error.message}`)
       return
     }
 
     try {
       const isAdmin = await ensureCurrentUserIsAdmin()
+      console.log('isAdmin check result:', isAdmin);
       if (!isAdmin) {
         await requireSupabase().auth.signOut()
-        setLoginError('Connexion réussie, mais ce compte n\'est pas admin. Activez is_admin=true dans public.profiles pour cet utilisateur.')
+        setLoginError('Connexion réussie, mais ce compte n\'est pas admin. Activez is_admin=true dans public.profiles pour cet utilisateur. Vérifiez la console pour plus de détails.')
         return
       }
     } catch (err) {
+      console.error('Error in ensureCurrentUserIsAdmin:', err);
       await requireSupabase().auth.signOut()
       setLoginError(toAdminErrorMessage(err, 'La vérification des droits admin'))
       return
@@ -228,10 +245,12 @@ export default function AdminPanel({ products, onSave, onExit, onProductsChange,
           notes.push('Aucune ligne profile trouvée pour cet utilisateur.')
         } else {
           profileExists = true
-          isAdmin = Boolean(profile.is_admin)
-          if (!isAdmin) {
-            notes.push('Le profil existe mais is_admin est false.')
-          }
+        }
+        
+        // Use our new non-recursive function to check admin status
+        isAdmin = await isCurrentUserAdmin()
+        if (!isAdmin) {
+          notes.push('Le profil existe mais is_admin est false.')
         }
 
         const diagPath = `diagnostics/${user.id}/${Date.now()}-write-check.txt`
