@@ -37,22 +37,29 @@ export default function Footer({ onNavigate }: FooterProps) {
             </h3>
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex items-center gap-2">
-                <span className="text-white/40 font-mono text-xs w-16">Tél:</span>
-                <a href="tel:+33123456789" className="hover:text-white transition-colors duration-150 font-mono">
-                  +33 (0)1 23 45 67 89
+                <span className="text-white/40 font-mono text-xs w-16">Est:</span>
+                <a href="tel:+213776548189" className="hover:text-white transition-colors duration-150 font-mono">
+                  07 76 54 81 89
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-white/40 font-mono text-xs w-16">Email:</span>
-                <a href="mailto:contact@brightled.com" className="hover:text-white transition-colors duration-150 font-mono">
-                  contact@brightled.com
+                <span className="text-white/40 font-mono text-xs w-16">Ouest:</span>
+                <a href="tel:+213770292104" className="hover:text-white transition-colors duration-150 font-mono">
+                  07 70 29 21 04
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-white/40 font-mono text-xs w-16">Centre:</span>
+                <a href="tel:+213770594982" className="hover:text-white transition-colors duration-150 font-mono">
+                  07 70 59 49 82
                 </a>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-white/40 font-mono text-xs w-16 mt-0.5">Adresse:</span>
                 <span className="text-white/60">
-                  12 Rue de l'Électricité<br />
-                  75008 Paris, France
+                  Eurl gh lumière<br />
+                  Cité ouled zidane sec 04<br />
+                  Gpe N 14 eucalyptus alger
                 </span>
               </div>
             </div>
